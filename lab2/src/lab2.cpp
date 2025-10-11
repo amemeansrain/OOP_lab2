@@ -36,7 +36,7 @@ Hex::Hex(const size_t& n, unsigned char t) : data(nullptr), length(0) {
     for (size_t i = 0; i < n; ++i) {
         data[i] = t;
     }
-    removeLeadingZeros();
+    removeZeros();
 }
 
 Hex::Hex(const std::string& t) : data(nullptr), length(0) {
@@ -54,7 +54,7 @@ Hex::Hex(const std::string& t) : data(nullptr), length(0) {
     for (size_t i = 0; i < t.length(); ++i) {
         data[i] = charToDigit(t[i]);
     }
-    removeLeadingZeros();
+    removeZeros();
 }
 
 Hex::Hex(const Hex& other) : data(nullptr), length(0) {
@@ -94,7 +94,7 @@ bool Hex::isValidHexChar(char c) const {
            (c >= 'a' && c <= 'f');
 }
 
-void Hex::removeLeadingZeros() {
+void Hex::removeZeros() {
     if (length == 0) return;
     size_t firstNonZero = 0;
     while (firstNonZero < length - 1 && data[firstNonZero] == 0) {
@@ -112,7 +112,7 @@ void Hex::removeLeadingZeros() {
     }
 }
 
-size_t Hex::size() const {
+size_t Hex::getSize() const {
     return length;
 }
 
@@ -140,7 +140,7 @@ Hex Hex::add(const Hex& other) const {
         result.data[resultSize - 1 - i] = sum % 16;
         carry = sum / 16;
     }
-    result.removeLeadingZeros();
+    result.removeZeros();
     return result;
 }
 
@@ -166,7 +166,7 @@ Hex Hex::sub(const Hex& other) const {
         }
         result.data[length - 1 - i] = digitA - digitB;
     }
-    result.removeLeadingZeros();
+    result.removeZeros();
     return result;
 }
 

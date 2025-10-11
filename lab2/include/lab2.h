@@ -11,7 +11,7 @@ class Hex {
 
         unsigned char charToDigit(char c) const;
         char digitToChar(unsigned char digit) const;
-        void removeLeadingZeros();
+        void removeZeros();
         bool isValidHexChar(char c) const;
 
     public:
@@ -22,7 +22,7 @@ class Hex {
         Hex(Hex&& other) noexcept;
         virtual ~Hex() noexcept;
 
-        size_t size() const;
+        size_t getSize() const;
         std::string toString() const;
 
         Hex add(const Hex& other) const;

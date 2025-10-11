@@ -1,21 +1,31 @@
 #include <iostream>
-#include "include/lab2.h"
+#include "lab2.h"
 
 int main() {
-    Hex num1("1A3F");
-    Hex num2("B2C");
-    
-    std::cout << "num1: " << num1.toString() << std::endl;
-    std::cout << "num2: " << num2.toString() << std::endl;
-    
-    Hex sum = num1.add(num2);
-    Hex diff = num1.sub(num2);
-    
-    std::cout << "1A3F + B2C = " << sum.toString() << std::endl;
-    std::cout << "1A3F - B2C = " << diff.toString() << std::endl;
-    std::cout << "1A3F > B2C: " << num1.gt(num2) << std::endl;
-    std::cout << "1A3F < B2C: " << num1.lt(num2) << std::endl;
-    std::cout << "1A3F == 1A3F: " << num1.eq(num1) << std::endl;
+    try {
+        Hex number1("1A3F");
+        Hex number2("B2C");
+        
+        std::cout << "First number: " << number1.toString() << std::endl;
+        std::cout << "Second number: " << number2.toString() << std::endl;
+        
+        Hex sum = number1.add(number2);
+        Hex difference = number1.subtract(number2);
+        
+        std::cout << "Sum: " << sum.toString() << std::endl;
+        std::cout << "Difference: " << difference.toString() << std::endl;
+        
+        std::cout << "First number is greater: " << (number1.isGreater(number2) ? "yes" : "no") << std::endl;
+        std::cout << "First number is smaller: " << (number1.isLess(number2) ? "yes" : "no") << std::endl;
+        std::cout << "Numbers are equal: " << (number1.isEqual(number2) ? "yes" : "no") << std::endl;
+        
+        Hex copy = number1.createCopy();
+        std::cout << "Copy of first number: " << copy.toString() << std::endl;
+        
+    } catch (const std::exception& error) {
+        std::cerr << "Error: " << error.what() << std::endl;
+        return 1;
+    }
     
     return 0;
 }

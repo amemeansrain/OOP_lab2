@@ -2,34 +2,34 @@
 #include <stdexcept>
 
 class Hex {
-    private:
-        unsigned char* data;
-        size_t length;
+private:
+    unsigned char* digits;
+    size_t size;
 
-        void allocate(size_t newLength);
-        void deallocate();
+    void allocateMemory(size_t newSize);
+    void freeMemory();
+    
+    unsigned char convertCharToDigit(char c) const;
+    char convertDigitToChar(unsigned char digit) const;
+    void trimLeadingZeros();
+    bool isValidHexCharacter(char c) const;
 
-        unsigned char charToDigit(char c) const;
-        char digitToChar(unsigned char digit) const;
-        void removeZeros();
-        bool isValidHexChar(char c) const;
+public:
+    Hex();
+    Hex(const size_t& size, unsigned char value = 0);
+    Hex(const std::string& hexString);
+    Hex(const Hex& other);
+    Hex(Hex&& other) noexcept;
+    ~Hex() noexcept;
 
-    public:
-        Hex();
-        Hex(const size_t& n, unsigned char t = 0);
-        Hex(const std::string& t);
-        Hex(const Hex& other);
-        Hex(Hex&& other) noexcept;
-        virtual ~Hex() noexcept;
+    size_t getSize() const;
+    std::string toString() const;
 
-        size_t getSize() const;
-        std::string toString() const;
+    Hex add(const Hex& other) const;
+    Hex subtract(const Hex& other) const;
+    Hex createCopy() const;
 
-        Hex add(const Hex& other) const;
-        Hex sub(const Hex& other) const;
-        Hex copy() const;
-
-        bool gt(const Hex& other) const;
-        bool lt(const Hex& other) const;
-        bool eq(const Hex& other) const;
+    bool isGreater(const Hex& other) const;
+    bool isLess(const Hex& other) const;
+    bool isEqual(const Hex& other) const;
 };

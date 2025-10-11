@@ -1,252 +1,180 @@
 #include "../include/lab2.h"
+#include <iostream>
 #include <algorithm>
-#include <cctype>
 
-void Hex::allocateMemory(size_t newSize) {
-    if (newSize == 0) {
-        digits = nullptr;
-        size = 0;
+void Hex::alloc(size_t n) {
+    if (n == 0) {
+        data = 0;
+        len = 0;
         return;
     }
-    digits = new unsigned char[newSize];
-    size = newSize;
+    data = new unsigned char[n];
+    len = n;
 }
 
-void Hex::freeMemory() {
-    if (digits != nullptr) {
-        delete[] digits;
-        digits = nullptr;
+void Hex::del() {
+    if (data) {
+        delete[] data;
+        data = 0;
     }
-    size = 0;
+    len = 0;
 }
 
-Hex::Hex() : digits(nullptr), size(0) {
-    allocateMemory(1);
-    digits[0] = 0;
+Hex::Hex() {
+    data = 0;
+    len = 0;
+    alloc(1);
+    data[0] = 0;
 }
 
-Hex::Hex(const size_t& arraySize, unsigned char value) : digits(nullptr), size(0) {
-    if (arraySize == 0) {
-        throw std::invalid_argument("Array size must be greater than zero");
-    }
-    if (value > 15) {
-        throw std::invalid_argument("Hex digit must be between 0 and 15");
-    }
-    
-    allocateMemory(arraySize);
-    for (size_t i = 0; i < arraySize; i++) {
-        digits[i] = value;
-    }
-    trimLeadingZeros();
+Hex::Hex(const size_t& n, unsigned char t) {
+    data = 0;
+    len = 0;
+    if (n == 0) throw std::invalid_argument("bad size");
+    if (t > 15) throw std::invalid_argument("bad digit");
+    alloc(n);
+    for (size_t i = 0; i < n; i++) data[i] = t;
+    rm0();
 }
 
-Hex::Hex(const std::string& hexString) : digits(nullptr), size(0) {
-    if (hexString.empty()) {
-        allocateMemory(1);
-        digits[0] = 0;
+Hex::Hex(const std::string& s) {
+    data = 0;
+    len = 0;
+    if (s.empty()) {
+        alloc(1);
+        data[0] = 0;
         return;
     }
-    
-    for (char character : hexString) {
-        if (!isValidHexCharacter(character)) {
-            throw std::invalid_argument("String contains invalid hex characters");
-        }
-    }
-    
-    allocateMemory(hexString.length());
-    
-    for (size_t i = 0; i < hexString.length(); i++) {
-        digits[i] = convertCharToDigit(hexString[i]);
-    }
-    
-    trimLeadingZeros();
+    for (char c : s) if (!good(c)) throw std::invalid_argument("bad char");
+    alloc(s.length());
+    for (size_t i = 0; i < s.length(); i++) data[i] = c2d(s[i]);
+    rm0();
 }
 
-Hex::Hex(const Hex& other) : digits(nullptr), size(0) {
-    if (other.size > 0) {
-        allocateMemory(other.size);
-        for (size_t i = 0; i < other.size; i++) {
-            digits[i] = other.digits[i];
-        }
+Hex::Hex(const Hex& o) {
+    data = 0;
+    len = 0;
+    if (o.len > 0) {
+        alloc(o.len);
+        for (size_t i = 0; i < o.len; i++) data[i] = o.data[i];
     }
 }
 
-Hex::Hex(Hex&& other) noexcept : digits(other.digits), size(other.size) {
-    other.digits = nullptr;
-    other.size = 0;
+Hex::Hex(Hex&& o) noexcept {
+    data = o.data;
+    len = o.len;
+    o.data = 0;
+    o.len = 0;
 }
 
 Hex::~Hex() noexcept {
-    freeMemory();
+    del();
 }
 
-unsigned char Hex::convertCharToDigit(char c) const {
-    if (c >= '0' && c <= '9') {
-        return c - '0';
-    }
-    if (c >= 'A' && c <= 'F') {
-        return c - 'A' + 10;
-    }
-    if (c >= 'a' && c <= 'f') {
-        return c - 'a' + 10;
-    }
-    throw std::invalid_argument("Invalid hex character");
+unsigned char Hex::c2d(char c) const {
+    if (c >= '0' && c <= '9') return c - '0';
+    if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+    if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+    throw std::invalid_argument("bad char");
 }
 
-char Hex::convertDigitToChar(unsigned char digit) const {
-    if (digit < 10) {
-        return '0' + digit;
-    }
-    return 'A' + (digit - 10);
+char Hex::d2c(unsigned char d) const {
+    if (d < 10) return '0' + d;
+    return 'A' + (d - 10);
 }
 
-bool Hex::isValidHexCharacter(char c) const {
-    return (c >= '0' && c <= '9') || 
-           (c >= 'A' && c <= 'F') || 
-           (c >= 'a' && c <= 'f');
+bool Hex::good(char c) const {
+    return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
 }
 
-void Hex::trimLeadingZeros() {
-    if (size == 0) return;
-    
-    size_t firstSignificantDigit = 0;
-    while (firstSignificantDigit < size - 1 && digits[firstSignificantDigit] == 0) {
-        firstSignificantDigit++;
-    }
-    
-    if (firstSignificantDigit > 0) {
-        size_t newSize = size - firstSignificantDigit;
-        unsigned char* newDigits = new unsigned char[newSize];
-        
-        for (size_t i = 0; i < newSize; i++) {
-            newDigits[i] = digits[firstSignificantDigit + i];
-        }
-        
-        freeMemory();
-        digits = newDigits;
-        size = newSize;
+void Hex::rm0() {
+    if (len == 0) return;
+    size_t start = 0;
+    while (start < len - 1 && data[start] == 0) start++;
+    if (start > 0) {
+        size_t new_len = len - start;
+        unsigned char* new_data = new unsigned char[new_len];
+        for (size_t i = 0; i < new_len; i++) new_data[i] = data[start + i];
+        del();
+        data = new_data;
+        len = new_len;
     }
 }
 
-size_t Hex::getSize() const {
-    return size;
+size_t Hex::size() const {
+    return len;
 }
 
-std::string Hex::toString() const {
-    std::string result;
-    for (size_t i = 0; i < size; i++) {
-        result += convertDigitToChar(digits[i]);
-    }
-    return result;
+std::string Hex::toStr() const {
+    std::string res;
+    for (size_t i = 0; i < len; i++) res += d2c(data[i]);
+    return res;
 }
 
-Hex Hex::add(const Hex& other) const {
-    size_t maxLength = std::max(size, other.size);
-    size_t resultLength = maxLength + 1;
-    
-    Hex result;
-    result.allocateMemory(resultLength);
-    
-    for (size_t i = 0; i < resultLength; i++) {
-        result.digits[i] = 0;
-    }
-    
+Hex Hex::plus(const Hex& o) const {
+    size_t max_len = std::max(len, o.len);
+    size_t res_len = max_len + 1;
+    Hex res;
+    res.alloc(res_len);
+    for (size_t i = 0; i < res_len; i++) res.data[i] = 0;
     unsigned char carry = 0;
-    
-    for (size_t i = 0; i < maxLength || carry > 0; i++) {
+    for (size_t i = 0; i < max_len || carry; i++) {
         unsigned char sum = carry;
-        
-        if (i < size) {
-            sum += digits[size - 1 - i];
-        }
-        if (i < other.size) {
-            sum += other.digits[other.size - 1 - i];
-        }
-        
-        result.digits[resultLength - 1 - i] = sum % 16;
+        if (i < len) sum += data[len - 1 - i];
+        if (i < o.len) sum += o.data[o.len - 1 - i];
+        res.data[res_len - 1 - i] = sum % 16;
         carry = sum / 16;
     }
-    
-    result.trimLeadingZeros();
-    return result;
+    res.rm0();
+    return res;
 }
 
-Hex Hex::subtract(const Hex& other) const {
-    if (isLess(other)) {
-        throw std::invalid_argument("Cannot subtract larger number from smaller");
-    }
-    
-    Hex result;
-    result.allocateMemory(size);
-    
-    for (size_t i = 0; i < size; i++) {
-        result.digits[i] = 0;
-    }
-    
+Hex Hex::minus(const Hex& o) const {
+    if (less(o)) throw std::invalid_argument("can't subtract");
+    Hex res;
+    res.alloc(len);
+    for (size_t i = 0; i < len; i++) res.data[i] = 0;
     int borrow = 0;
-    
-    for (size_t i = 0; i < size; i++) {
-        int currentDigit = digits[size - 1 - i];
-        int otherDigit = (i < other.size) ? other.digits[other.size - 1 - i] : 0;
-        
-        currentDigit -= borrow;
-        
-        if (currentDigit < otherDigit) {
-            currentDigit += 16;
+    for (size_t i = 0; i < len; i++) {
+        int a = data[len - 1 - i];
+        int b = (i < o.len) ? o.data[o.len - 1 - i] : 0;
+        a -= borrow;
+        if (a < b) {
+            a += 16;
             borrow = 1;
         } else {
             borrow = 0;
         }
-        
-        result.digits[size - 1 - i] = currentDigit - otherDigit;
+        res.data[len - 1 - i] = a - b;
     }
-    
-    result.trimLeadingZeros();
-    return result;
+    res.rm0();
+    return res;
 }
 
-Hex Hex::createCopy() const {
+Hex Hex::dup() const {
     return Hex(*this);
 }
 
-bool Hex::isGreater(const Hex& other) const {
-    if (size != other.size) {
-        return size > other.size;
+bool Hex::more(const Hex& o) const {
+    if (len != o.len) return len > o.len;
+    for (size_t i = 0; i < len; i++) {
+        if (data[i] != o.data[i]) return data[i] > o.data[i];
     }
-    
-    for (size_t i = 0; i < size; i++) {
-        if (digits[i] != other.digits[i]) {
-            return digits[i] > other.digits[i];
-        }
-    }
-    
     return false;
 }
 
-bool Hex::isLess(const Hex& other) const {
-    if (size != other.size) {
-        return size < other.size;
+bool Hex::less(const Hex& o) const {
+    if (len != o.len) return len < o.len;
+    for (size_t i = 0; i < len; i++) {
+        if (data[i] != o.data[i]) return data[i] < o.data[i];
     }
-    
-    for (size_t i = 0; i < size; i++) {
-        if (digits[i] != other.digits[i]) {
-            return digits[i] < other.digits[i];
-        }
-    }
-    
     return false;
 }
 
-bool Hex::isEqual(const Hex& other) const {
-    if (size != other.size) {
-        return false;
+bool Hex::same(const Hex& o) const {
+    if (len != o.len) return false;
+    for (size_t i = 0; i < len; i++) {
+        if (data[i] != o.data[i]) return false;
     }
-    
-    for (size_t i = 0; i < size; i++) {
-        if (digits[i] != other.digits[i]) {
-            return false;
-        }
-    }
-    
     return true;
 }

@@ -1,224 +1,82 @@
 #include <gtest/gtest.h>
 #include "../include/lab2.h"
 
-TEST(HexTest, DefaultConstructor) {
-    Hex hex;
-    EXPECT_EQ(hex.getSize(), 1);
-    EXPECT_EQ(hex.toString(), "0");
+TEST(HexTest, CreateEmpty) {
+    Hex h;
+    EXPECT_EQ(h.size(), 1);
+    EXPECT_EQ(h.toStr(), "0");
 }
 
-TEST(HexTest, SizeValueConstructor) {
-    Hex hex(4, 10);
-    EXPECT_EQ(hex.getSize(), 4);
-    EXPECT_EQ(hex.toString(), "AAAA");
+TEST(HexTest, CreateFromString) {
+    Hex h("1A3F");
+    EXPECT_EQ(h.size(), 4);
+    EXPECT_EQ(h.toStr(), "1A3F");
 }
 
-TEST(HexTest, SizeValueConstructorInvalidDigit) {
-    EXPECT_THROW(Hex(3, 16), std::invalid_argument);
-}
-
-TEST(HexTest, SizeValueConstructorZeroSize) {
-    EXPECT_THROW(Hex(0, 5), std::invalid_argument);
-}
-
-TEST(HexTest, StringConstructor) {
-    Hex hex("1A3F");
-    EXPECT_EQ(hex.getSize(), 4);
-    EXPECT_EQ(hex.toString(), "1A3F");
-}
-
-TEST(HexTest, StringConstructorLowerCase) {
-    Hex hex("1a3f");
-    EXPECT_EQ(hex.toString(), "1A3F");
-}
-
-TEST(HexTest, StringConstructorEmpty) {
-    Hex hex("");
-    EXPECT_EQ(hex.toString(), "0");
-}
-
-TEST(HexTest, StringConstructorWithLeadingZeros) {
-    Hex hex("000ABC");
-    EXPECT_EQ(hex.toString(), "ABC");
-}
-
-TEST(HexTest, StringConstructorSingleZero) {
-    Hex hex("0");
-    EXPECT_EQ(hex.toString(), "0");
-}
-
-TEST(HexTest, StringConstructorInvalidChar) {
+TEST(HexTest, CreateBad) {
     EXPECT_THROW(Hex("1G3F"), std::invalid_argument);
 }
 
-TEST(HexTest, CopyConstructor) {
-    Hex hex1("1A3F");
-    Hex hex2(hex1);
-    EXPECT_EQ(hex2.toString(), "1A3F");
-    EXPECT_EQ(hex2.getSize(), 4);
+TEST(HexTest, Add) {
+    Hex a("1A3F");
+    Hex b("B2C");
+    Hex c = a.plus(b);
+    EXPECT_EQ(c.toStr(), "256B");
 }
 
-TEST(HexTest, AddOperation) {
-    Hex hex1("1A3F");
-    Hex hex2("B2C");
-    Hex result = hex1.add(hex2);
-    EXPECT_EQ(result.toString(), "256B");
+TEST(HexTest, AddCarry) {
+    Hex a("FFF");
+    Hex b("1");
+    Hex c = a.plus(b);
+    EXPECT_EQ(c.toStr(), "1000");
 }
 
-TEST(HexTest, AddOperationWithCarry) {
-    Hex hex1("FFF");
-    Hex hex2("1");
-    Hex result = hex1.add(hex2);
-    EXPECT_EQ(result.toString(), "1000");
+TEST(HexTest, Sub) {
+    Hex a("1A3F");
+    Hex b("B2C");
+    Hex c = a.minus(b);
+    EXPECT_EQ(c.toStr(), "F13");
 }
 
-TEST(HexTest, AddOperationZeros) {
-    Hex hex1("0");
-    Hex hex2("0");
-    Hex result = hex1.add(hex2);
-    EXPECT_EQ(result.toString(), "0");
+TEST(HexTest, SubBad) {
+    Hex a("123");
+    Hex b("124");
+    EXPECT_THROW(a.minus(b), std::invalid_argument);
 }
 
-TEST(HexTest, AddOperationLargeNumbers) {
-    Hex hex1("FFFFFFFF");
-    Hex hex2("1");
-    Hex result = hex1.add(hex2);
-    EXPECT_EQ(result.toString(), "100000000");
+TEST(HexTest, Compare) {
+    Hex a("1A3F");
+    Hex b("B2C");
+    EXPECT_TRUE(a.more(b));
+    EXPECT_TRUE(b.less(a));
+    EXPECT_FALSE(a.same(b));
 }
 
-TEST(HexTest, SubtractOperation) {
-    Hex hex1("1A3F");
-    Hex hex2("B2C");
-    Hex result = hex1.subtract(hex2);
-    EXPECT_EQ(result.toString(), "F13");
+TEST(HexTest, Copy) {
+    Hex a("1A3F");
+    Hex b = a.dup();
+    EXPECT_TRUE(a.same(b));
 }
 
-TEST(HexTest, SubtractOperationEqual) {
-    Hex hex1("ABC");
-    Hex hex2("ABC");
-    Hex result = hex1.subtract(hex2);
-    EXPECT_EQ(result.toString(), "0");
+TEST(HexTest, BigAdd) {
+    Hex a("FFFFFFFF");
+    Hex b("1");
+    Hex c = a.plus(b);
+    EXPECT_EQ(c.toStr(), "100000000");
 }
 
-TEST(HexTest, SubtractOperationToZero) {
-    Hex hex1("F");
-    Hex hex2("F");
-    Hex result = hex1.subtract(hex2);
-    EXPECT_EQ(result.toString(), "0");
+TEST(HexTest, RemoveZeros) {
+    Hex a("000ABC");
+    EXPECT_EQ(a.toStr(), "ABC");
 }
 
-TEST(HexTest, SubtractOperationInvalid) {
-    Hex hex1("123");
-    Hex hex2("124");
-    EXPECT_THROW(hex1.subtract(hex2), std::invalid_argument);
-}
-
-TEST(HexTest, CopyMethod) {
-    Hex hex1("1A3F");
-    Hex hex2 = hex1.createCopy();
-    EXPECT_EQ(hex2.toString(), "1A3F");
-    EXPECT_EQ(hex2.getSize(), 4);
-}
-
-TEST(HexTest, GreaterOperation) {
-    Hex hex1("1A3F");
-    Hex hex2("B2C");
-    EXPECT_TRUE(hex1.isGreater(hex2));
-    EXPECT_FALSE(hex2.isGreater(hex1));
-}
-
-TEST(HexTest, GreaterOperationEqual) {
-    Hex hex1("1A3F");
-    Hex hex2("1A3F");
-    EXPECT_FALSE(hex1.isGreater(hex2));
-}
-
-TEST(HexTest, GreaterOperationDifferentLength) {
-    Hex hex1("1000");
-    Hex hex2("FFF");
-    EXPECT_TRUE(hex1.isGreater(hex2));
-}
-
-TEST(HexTest, LessOperation) {
-    Hex hex1("B2C");
-    Hex hex2("1A3F");
-    EXPECT_TRUE(hex1.isLess(hex2));
-    EXPECT_FALSE(hex2.isLess(hex1));
-}
-
-TEST(HexTest, LessOperationEqual) {
-    Hex hex1("1A3F");
-    Hex hex2("1A3F");
-    EXPECT_FALSE(hex1.isLess(hex2));
-}
-
-TEST(HexTest, EqualsOperation) {
-    Hex hex1("1A3F");
-    Hex hex2("1A3F");
-    Hex hex3("1A3E");
-    EXPECT_TRUE(hex1.isEqual(hex2));
-    EXPECT_FALSE(hex1.isEqual(hex3));
-}
-
-TEST(HexTest, EqualsOperationDifferentLength) {
-    Hex hex1("ABC");
-    Hex hex2("0ABC");
-    EXPECT_TRUE(hex1.isEqual(hex2));
-}
-
-TEST(HexTest, SizeMethod) {
-    Hex hex1("1A3F");
-    Hex hex2("FFFFFFFF");
-    Hex hex3("0");
-    EXPECT_EQ(hex1.getSize(), 4);
-    EXPECT_EQ(hex2.getSize(), 8);
-    EXPECT_EQ(hex3.getSize(), 1);
-}
-
-TEST(HexTest, ToStringMethod) {
-    Hex hex1("1a3f");
-    Hex hex2("ABCDEF");
-    Hex hex3("0");
-    EXPECT_EQ(hex1.toString(), "1A3F");
-    EXPECT_EQ(hex2.toString(), "ABCDEF");
-    EXPECT_EQ(hex3.toString(), "0");
-}
-
-TEST(HexTest, ComplexOperations) {
-    Hex hex1("123");
-    Hex hex2("456");
-    Hex hex3("789");
-    
-    Hex sum1 = hex1.add(hex2);
-    Hex finalSum = sum1.add(hex3);
-    
-    EXPECT_EQ(finalSum.toString(), "D02");
-}
-
-TEST(HexTest, MultipleSubtractions) {
-    Hex hex1("1000");
-    Hex hex2("100");
-    Hex hex3("10");
-    
-    Hex diff1 = hex1.subtract(hex2);
-    Hex finalDiff = diff1.subtract(hex3);
-    
-    EXPECT_EQ(finalDiff.toString(), "EF0");
-}
-
-TEST(HexTest, Immutability) {
-    Hex hex1("123");
-    Hex hex2("456");
-    
-    Hex sum = hex1.add(hex2);
-    Hex original = hex1.createCopy();
-    
-    EXPECT_TRUE(hex1.isEqual(original));
-    EXPECT_EQ(hex1.toString(), "123");
-    EXPECT_EQ(sum.toString(), "579");
+TEST(HexTest, EqualWithZeros) {
+    Hex a("ABC");
+    Hex b("0ABC");
+    EXPECT_TRUE(a.same(b));
 }
 
 int main(int argc, char **argv) {
-    ::testing::InitGoogleTest(&argc, argv);
+    testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

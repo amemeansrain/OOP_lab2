@@ -1,35 +1,40 @@
+#ifndef LAB2_H
+#define LAB2_H
+
 #include <string>
 #include <stdexcept>
 
 class Hex {
-private:
-    unsigned char* digits;
-    size_t size;
+    private:
+        unsigned char* data;
+        size_t len;
 
-    void allocateMemory(size_t newSize);
-    void freeMemory();
-    
-    unsigned char convertCharToDigit(char c) const;
-    char convertDigitToChar(unsigned char digit) const;
-    void trimLeadingZeros();
-    bool isValidHexCharacter(char c) const;
+        void alloc(size_t n);
+        void del();
 
-public:
-    Hex();
-    Hex(const size_t& size, unsigned char value = 0);
-    Hex(const std::string& hexString);
-    Hex(const Hex& other);
-    Hex(Hex&& other) noexcept;
-    ~Hex() noexcept;
+        unsigned char c2d(char c) const;
+        char d2c(unsigned char d) const;
+        void rm0();
+        bool good(char c) const;
 
-    size_t getSize() const;
-    std::string toString() const;
+    public:
+        Hex();
+        Hex(const size_t& n, unsigned char t = 0);
+        Hex(const std::string& s);
+        Hex(const Hex& o);
+        Hex(Hex&& o) noexcept;
+        virtual ~Hex() noexcept;
 
-    Hex add(const Hex& other) const;
-    Hex subtract(const Hex& other) const;
-    Hex createCopy() const;
+        size_t size() const;
+        std::string toStr() const;
 
-    bool isGreater(const Hex& other) const;
-    bool isLess(const Hex& other) const;
-    bool isEqual(const Hex& other) const;
+        Hex plus(const Hex& o) const;
+        Hex minus(const Hex& o) const;
+        Hex dup() const;
+
+        bool more(const Hex& o) const;
+        bool less(const Hex& o) const;
+        bool same(const Hex& o) const;
 };
+
+#endif
